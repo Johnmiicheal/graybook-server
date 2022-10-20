@@ -54,13 +54,6 @@ export class GrayCaseResponse{
     grayCase?: GrayCase;
 }
 
-@ObjectType()
-export class VoteResponse{
-    @Field(()=> Boolean)
-    success: Boolean;
-    @Field(()=> Number, {nullable: true})
-    voteCount?: Number;
-}
 
 @ObjectType()
 export class PaginatedGrayCase {

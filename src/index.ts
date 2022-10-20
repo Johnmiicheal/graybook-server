@@ -14,9 +14,8 @@ import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 import { AdminResolver } from "./resolvers/admin";
 import { GrayCaseResolver } from "./resolvers/grayCase";
-import { CommentResolver } from "./resolvers/comment";
-import { UniversityResolver } from "./resolvers/university";
-import { GroupResolver } from "./resolvers/school";
+import { StudentResolver } from "./resolvers/student";
+import { SchoolResolver } from "./resolvers/school";
 
 require("dotenv").config();
 
@@ -74,7 +73,7 @@ const main = async() => {
     const apolloServer = new ApolloServer({
       csrfPrevention: true,
       schema: await buildSchema({
-          resolvers: [ AdminResolver, GrayCaseResolver, CommentResolver, UniversityResolver, GroupResolver],
+          resolvers: [ AdminResolver, GrayCaseResolver, StudentResolver, SchoolResolver ],
           validate: false,
         }),
         context: ({ req, res }) => ({

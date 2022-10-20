@@ -1,4 +1,4 @@
-create database forum_server;
+create database gray2book;
 create user postgres password 'password';
-grant all privileges on database forum_server to postgres;
-\c forum_server
+grant all privileges on database gray2book to postgres;
+\c gray2book
