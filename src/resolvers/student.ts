@@ -18,7 +18,7 @@ import { isAuth } from "../middleware/isAuth";
 // import session from "express-session";
 
 @Resolver(Student)
-export class Studentresolver {
+export class StudentResolver {
   @FieldResolver(() => StudentResponse)
   async student(
     @Root() student: Student,
