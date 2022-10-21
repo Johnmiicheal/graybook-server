@@ -52,7 +52,7 @@ export class School {
   @OneToOne()
   creator!: Admin;
 
-  @ManyToMany(() => GrayCase, grayCase => grayCase.school)
+  @ManyToMany(() => GrayCase, grayCase => grayCase.school, { owner: true })
   grayed = new Collection<GrayCase>(this);
 
   @ManyToMany(() => Student, student => student.enrolled)

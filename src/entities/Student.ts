@@ -43,7 +43,7 @@ export class Student {
   @Property()
   ageInput!: number;
 
-  @Field({ nullable: true })
+  @Field()
   @Property({ nullable: true })
   birthDay: string;
 

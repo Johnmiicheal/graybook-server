@@ -10,22 +10,31 @@ export const validateRegister = (options: UsernamePasswordInput) => {
     ];
   }
 
-  if (options.username.length <= 2) {
+  if (options.adminName.length <= 2) {
     return [
       {
-        field: "username",
+        field: "adminName",
         message: "length must be greater than 2",
       },
     ];
   }
 
-  if (options.username.includes("@")) {
+  if (options.adminName.includes("@")) {
     return [
       {
-        field: "username",
+        field: "adminName",
         message: "cannot include an @",
       },
     ];
+  }
+
+  if (options.phoneNumber.length < 11){
+    return [
+      {
+        field: "phoneNumber",
+        message: "Phone Number is invalid"
+      }
+    ]
   }
 
   if (options.password.length <= 2) {
