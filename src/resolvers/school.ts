@@ -21,42 +21,12 @@ import { isAuth } from "../middleware/isAuth";
 @Resolver(School)
 export class SchoolResolver {
 
-  @FieldResolver(() => SchoolResponse)
-  async school(@Root() school: School, @Ctx() { em, req }: MyContext)
-  : Promise<SchoolResponse> {
-    try{
-    const admin = await em.fork({}).findOneOrFail(Admin, { id: req.session.userid }, { populate: ["school"] })
-    const school = await em.fork({}).findOneOrFail(School, { id: admin.school.id }, 
-      {populate: ["schoolName", "address", "country", "state", "members", "creator", "logoImgUrl", "bannerImgUrl",]});
-
-      if (school){
-        return {
-          school,
-        }
-      } else{
-        return {
-          errors: [
-            {
-              field: "Error occured while fetching university.",
-              message: `University with id could not be fetched`,
-            },
-          ],
-        };
-
-      }
-    } catch (err){
-      return {
-          errors: [
-            {
-              field: "Error occured while fetching university.",
-              message: `University with id ${school.id} could not be fetched`,
-            },
-          ],
-      };
-
+  @FieldResolver(() => String)
+  creator(@Root() admin: Admin, @Ctx() { req }: MyContext) {
+    if (req.session.userid === admin.id) {
+      return admin.adminName;
     }
-
-    
+    return "";
   }
 
   @Query(() => [School])

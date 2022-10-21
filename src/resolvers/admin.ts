@@ -22,7 +22,7 @@ import { v4 } from "uuid";
 @Resolver(Admin) 
 export class AdminResolver {
   @FieldResolver(() => String)
-  email(@Root() admin: Admin, @Ctx() { req }: MyContext) {
+  adminName(@Root() admin: Admin, @Ctx() { req }: MyContext) {
     if (req.session.userid === admin.id) {
       return admin.adminName;
     }

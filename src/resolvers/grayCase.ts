@@ -17,7 +17,7 @@ import { Admin } from "../entities/Admin";
 import { AdminResponse, GrayCaseResponse, PaginatedGrayCase } from "../types";
 import { School } from "../entities/School";
 import { QueryOrder } from "@mikro-orm/core";
-import { Student } from "src/entities/Student";
+import { Student } from "../entities/Student";
 
 @Resolver(GrayCase)
 export class GrayCaseResolver {

@@ -19,60 +19,12 @@ import { isAuth } from "../middleware/isAuth";
 
 @Resolver(Student)
 export class StudentResolver {
-  @FieldResolver(() => StudentResponse)
-  async student(
-    @Root() student: Student,
-    @Ctx() { em, req }: MyContext
-  ): Promise<StudentResponse> {
-    try {
-      const admin = await em
-        .fork({})
-        .findOneOrFail(
-          Admin,
-          { id: req.session.userid },
-          { populate: ["student"] }
-        );
-      const student = await em
-        .fork({})
-        .findOneOrFail(
-          Student,
-          { id: admin.student.id },
-          {
-            populate: [
-              "firstName",
-              "lastName",
-              "ageInput",
-              "gender",
-              "gradeClass",
-              "profileImgUrl",
-              "enrolled",
-            ],
-          }
-        );
-      if (student) {
-        return {
-          student,
-        };
-      } else {
-        return {
-          errors: [
-            {
-              field: "Error occured while fetching university.",
-              message: `University with id could not be fetched`,
-            },
-          ],
-        };
-      }
-    } catch (err) {
-      return {
-        errors: [
-          {
-            field: "Error occured while fetching university.",
-            message: `University with id ${student.id} could not be fetched`,
-          },
-        ],
-      };
+  @FieldResolver(() => String)
+  owner(@Root() admin: Admin, @Ctx() { req }: MyContext) {
+    if (req.session.userid === admin.id) {
+      return admin.adminName;
     }
+    return "";
   }
 
   @Query(() => [Student])
@@ -84,7 +36,7 @@ export class StudentResolver {
   }
 
   @Query(() => StudentResponse)
-  async getGroupByName(
+  async getStudentByName(
     @Arg("firstName") firstName: string,
     @Ctx() { em, req }: MyContext
   ): Promise<StudentResponse> {
