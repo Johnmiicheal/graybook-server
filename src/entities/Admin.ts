@@ -4,7 +4,6 @@ import {
   Property,
   Collection,
   OneToMany,
-  OneToOne,
   ManyToMany,
 } from "@mikro-orm/core";
 import { ObjectType, Field } from "type-graphql";
@@ -46,20 +45,14 @@ export class Admin {
   @Property()
   profileImgUrl = "https://i.imgur.com/OQENGf1.jpeg";
 
-  // @ManyToMany(() => Group, group => group.members, {owner: true})
-  // subscriptions = new Collection<Group>(this);
-
-  // @ManyToMany(() => Group, group => group.moderators, {owner: true})
-  // moderating = new Collection<Group>(this);
-
   @OneToMany(() => GrayCase, (grayCase) => grayCase.owner)
   grayCase = new Collection<GrayCase>(this);
 
   @OneToMany(() => Student, (student) => student.admin)
-  student!: Student;
+  student = new Collection<Student>(this);
 
-  @OneToOne(() => School)
-  school: School;
+  @OneToMany(() => School, (school) => school.creator)
+  school = new Collection<School>(this);
 
   @ManyToMany(() => GrayCase, (post) => post.archived, { owner: true })
   archivedGrayCase = new Collection<GrayCase>(this);

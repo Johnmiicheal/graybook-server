@@ -1,4 +1,4 @@
-import { Collection, Entity, PrimaryKey, Property, ManyToMany, OneToOne, ManyToOne } from "@mikro-orm/core";
+import { Collection, Entity, PrimaryKey, Property, ManyToMany, ManyToOne } from "@mikro-orm/core";
 import { Admin } from "./Admin";
 import { ObjectType, Field } from "type-graphql";
 import { Student } from "./Student";
@@ -49,24 +49,21 @@ export class School {
   @Property()
   bannerImgUrl:string = "https://i.imgur.com/OQENGf1.jpeg";
 
-  @OneToOne()
-  creator!: Admin;
-
   @ManyToMany(() => GrayCase, grayCase => grayCase.school, { owner: true })
   grayed = new Collection<GrayCase>(this);
 
   @ManyToMany(() => Student, student => student.enrolled)
   members = new Collection<Student>(this);
 
-  @ManyToOne(() => Student)
-  students = Student;
+  @ManyToOne(() => Admin)
+  creator: Admin;
 
   constructor(schoolName : string, rcnumber: number, address: string, state: string, country: string){
     this.schoolName = schoolName;
     this.rcnumber = rcnumber;
     this.address = address;
     this.state = state;
-    this.country = country
+    this.country = country;
   }
 
 }
