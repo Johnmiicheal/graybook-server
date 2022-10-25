@@ -129,8 +129,6 @@ export class StudentResolver {
     const admin = await em
       .fork({})
       .findOne(Admin, { id: req.session.userid }, { populate: ["student"] });
-    const school = await em.fork({}).findOne(School, { id: admin?.school.id }, { populate: ["members"]})
-
     if (admin) {
       const student = new Student(
         firstName,
@@ -150,10 +148,9 @@ export class StudentResolver {
         academicResult,
         profileImgUrl
       );
-      school?.members.add(student) 
+      admin.student.add(student)
       await em.fork({}).persistAndFlush(student);
       await em.fork({}).persistAndFlush(admin);
-      student.enrolled.add(school!) 
       return { student };
     } else {
       return {

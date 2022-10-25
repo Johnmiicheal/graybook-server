@@ -15,7 +15,7 @@ import { GrayCase } from "../entities/GrayCase";
 import { isAuth } from "../middleware/isAuth";
 import { Admin } from "../entities/Admin";
 import { AdminResponse, GrayCaseResponse, PaginatedGrayCase } from "../types";
-import { School } from "../entities/School";
+// import { School } from "../entities/School";
 import { QueryOrder } from "@mikro-orm/core";
 import { Student } from "../entities/Student";
 
@@ -343,11 +343,11 @@ export class GrayCaseResolver {
     @Ctx() { em, req }: MyContext
   ): Promise<GrayCaseResponse> {
     const admin = await em.fork({}).findOne(Admin, { id: req.session.userid });
-    const school = await em.fork({}).findOne(School, { id: admin?.school.id });
 
-    if (admin && school) {
-      // TODO: you have to be a uni member to post in a uni school
+    if (admin) {
+      // Basically, the Admin is an extension of the School...
       const grayCase = new GrayCase(admin, category, firstName, lastName, gradeClass, gender, ageInput);
+      admin.grayCase.add(grayCase);
       await em.fork({}).persistAndFlush(grayCase);
       return { grayCase };
     } else {
@@ -370,13 +370,12 @@ export class GrayCaseResolver {
     @Ctx() { em, req }: MyContext
   ): Promise<GrayCaseResponse> {
     const admin = await em.fork({}).findOne(Admin, { id: req.session.userid });
-    const school = await em.fork({}).findOne(School, { id: admin?.school.id });
     const student = await em.fork({}).findOne(Student, { id: studentId });
 
-    if (admin && student && school) {
+    if (admin && student) {
       const grayCase = new GrayCase(admin, category, student?.firstName!, student?.lastName!, student?.gradeClass!, student?.gender!, student?.ageInput!);
       student.default.add(grayCase);
-      school.grayed.add(grayCase);
+      grayCase.defaulter.add(student)
       await em.fork({}).persistAndFlush(grayCase);
       return { grayCase };
     } else {

@@ -161,8 +161,6 @@ export class AdminResolver {
     }
 
     const hashedPassword = await argon2.hash(options.password);
-    // let School = getSchool(options.email);
-
     try {
           try {
             const admin = new Admin(
