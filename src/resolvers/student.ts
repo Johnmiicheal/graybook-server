@@ -9,7 +9,7 @@ import {
   Root,
 } from "type-graphql";
 
-import { MyContext, StudentResponse } from "../types";
+import { AdminResponse, MyContext, SchoolResponse, StudentResponse } from "../types";
 import { School } from "../entities/School";
 import { Student } from "../entities/Student";
 import { Admin } from "../entities/Admin";
@@ -19,12 +19,42 @@ import { isAuth } from "../middleware/isAuth";
 
 @Resolver(Student)
 export class StudentResolver {
-  @FieldResolver(() => String)
-  owner(@Root() admin: Admin, @Ctx() { req }: MyContext) {
-    if (req.session.userid === admin.id) {
-      return admin.adminName;
+  @FieldResolver(() => SchoolResponse)
+  async school(@Root() student: Student, @Ctx() { em, req }: MyContext
+  ): Promise<SchoolResponse>{
+    const school = await em.fork({}).findOne(School, { id: student.school.id });
+    if (school) {
+      return { school };
+    } else {
+      return{
+        errors: [
+          {
+            field: "School not found",
+            message: "School could not be fetched"
+          }
+        ]
+      }
     }
-    return "";
+  }
+  
+  @FieldResolver(() => AdminResponse)
+  async creator(
+    @Root() student: Student,
+    @Ctx() { em, req }: MyContext
+  ): Promise<AdminResponse> {
+    const admin = await em.fork({}).findOne(Admin, { id: student.admin.id });
+    if (admin) {
+      return { admin };
+    } else {
+      return {
+        errors: [
+          {
+            field: "Admin not found.",
+            message: "Admin could not be fetched.",
+          },
+        ],
+      };
+    }
   }
 
   @Query(() => [Student])
@@ -43,7 +73,27 @@ export class StudentResolver {
     try {
       const student = await em
         .fork({})
-        .findOneOrFail(Student, { firstName: firstName });
+        .findOne(Student, { firstName: firstName }, {
+          populate: [
+            "academicResult",
+            "admin",
+            "admin.id",
+            "school",
+            "school.id",
+            "ageInput",
+            "birthDate",
+            "createdAt",
+            "defaults",
+            "enrolled",
+            "firstName",
+            "gender",
+            "gradeClass",
+            "homeAddress",
+            "id",
+            "lastName",
+            "parentName"
+          ]
+        });
       if (student) {
         return {
           student,
@@ -96,12 +146,37 @@ export class StudentResolver {
     @Arg("schoolId") schoolId: number,
     @Ctx() { em, req }: MyContext
   ): Promise<Student[]> {
-    const school = await em.fork({}).findOne(School, { id: schoolId }, { populate: ["members"]})
-    if(school){
-      const students = school.members.getItems()
-      return students
+    const school = await em
+      .fork({})
+      .findOne(School, { id: schoolId }, { populate: ["members"] });
+    if (school) {
+      const students = school.members.getItems();
+      return students;
     }
-    return []    
+    return [];
+  }
+
+  @Query(() => StudentResponse)
+  // @UseMiddleware(isAuth)
+  async getStudentByClass(
+    @Arg("gradeClass") gradeClass: string,
+    @Ctx() { em, req }: MyContext
+  ): Promise<StudentResponse> {
+    // const admin = await em.fork({}).findOneOrFail(Admin, {id: req.session.userid }, {populate: ["school", "student"]});
+    // const school = await em.fork({}).findOneOrFail(School, { creator: admin }, { populate: ["members"]});
+    const student = await em.fork({}).findOne(Student, { gradeClass: gradeClass });
+    if (student) {
+      return{ student }
+    } else {
+      return {
+        errors: [
+          {
+            field: "No Students found",
+            message: "No Student data available"
+          }
+        ]
+      }
+    }
   }
 
   @Mutation(() => StudentResponse)
@@ -112,9 +187,7 @@ export class StudentResolver {
     @Arg("gender") gender: string,
     @Arg("gradeClass") gradeClass: string,
     @Arg("ageInput") ageInput: number,
-    @Arg("birthDay") birthDay: string,
-    @Arg("birthMonth") birthMonth: string,
-    @Arg("birthYear") birthYear: string,
+    @Arg("birthDate") birthDate: Date,
     @Arg("parentName") parentName: string,
     @Arg("parentNumber") parentNumber: string,
     @Arg("parentEmail") parentEmail: string,
@@ -128,17 +201,18 @@ export class StudentResolver {
   ): Promise<StudentResponse> {
     const admin = await em
       .fork({})
-      .findOne(Admin, { id: req.session.userid }, { populate: ["student"] });
-    if (admin) {
+      .findOne(
+        Admin,
+        { id: req.session.userid });
+    const school = await em.fork({}).findOne(School, { creator: admin });
+    if (admin && school) {
       const student = new Student(
         firstName,
         lastName,
         gender,
         gradeClass,
         ageInput,
-        birthDay,
-        birthMonth,
-        birthYear,
+        birthDate,
         parentName,
         parentNumber,
         parentEmail,
@@ -146,11 +220,12 @@ export class StudentResolver {
         state,
         lgaOrigin,
         academicResult,
-        profileImgUrl
+        profileImgUrl,
+        admin,
+        school
       );
-      admin.student.add(student)
+      school.members.add(student);
       await em.fork({}).persistAndFlush(student);
-      await em.fork({}).persistAndFlush(admin);
       return { student };
     } else {
       return {

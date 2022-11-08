@@ -15,7 +15,6 @@ import { GrayCase } from "../entities/GrayCase";
 import { isAuth } from "../middleware/isAuth";
 import { Admin } from "../entities/Admin";
 import { AdminResponse, GrayCaseResponse, PaginatedGrayCase } from "../types";
-// import { School } from "../entities/School";
 import { QueryOrder } from "@mikro-orm/core";
 import { Student } from "../entities/Student";
 
@@ -374,7 +373,7 @@ export class GrayCaseResolver {
 
     if (admin && student) {
       const grayCase = new GrayCase(admin, category, student?.firstName!, student?.lastName!, student?.gradeClass!, student?.gender!, student?.ageInput!);
-      student.default.add(grayCase);
+      student.defaults.add(grayCase);
       grayCase.defaulter.add(student)
       await em.fork({}).persistAndFlush(grayCase);
       return { grayCase };

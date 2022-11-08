@@ -64,7 +64,7 @@ export class GrayCase {
   @ManyToMany(() => Admin, admin => admin.archivedGrayCase)
   archived = new Collection<Admin>(this);
 
-  @ManyToMany(() => Student, student => student.default)
+  @ManyToMany(() => Student, student => student.defaults)
   defaulter = new Collection<Student>(this);
 
   constructor(

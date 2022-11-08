@@ -1,14 +1,19 @@
-import { Collection, Entity, PrimaryKey, Property, ManyToMany, ManyToOne } from "@mikro-orm/core";
-import { Admin } from "./Admin";
+import {
+  Collection,
+  Entity,
+  PrimaryKey,
+  Property,
+  ManyToMany,
+  OneToOne,
+} from "@mikro-orm/core";
 import { ObjectType, Field } from "type-graphql";
 import { Student } from "./Student";
 import { GrayCase } from "./GrayCase";
-
+import { Admin } from "./Admin";
 
 @ObjectType()
 @Entity()
 export class School {
-
   @Field()
   @PrimaryKey()
   id!: number;
@@ -18,11 +23,11 @@ export class School {
   createdAt: Date = new Date();
 
   @Field()
-  @Property({length:60})
+  @Property({ length: 60 })
   schoolName!: string;
 
   @Field()
-  @Property({unique: true, length:8})
+  @Property({ unique: true, length: 8 })
   rcnumber!: number;
 
   @Field()
@@ -38,32 +43,39 @@ export class School {
   country!: string;
 
   @Field()
-  @Property({length:3000})
+  @Property({ length: 3000 })
   description: string = "Description goes here";
 
   @Field()
   @Property()
-  logoImgUrl:string = "https://i.imgur.com/OQENGf1.jpeg";
+  logoImgUrl: string = "https://i.imgur.com/OQENGf1.jpeg";
 
   @Field()
   @Property()
-  bannerImgUrl:string = "https://i.imgur.com/OQENGf1.jpeg";
+  bannerImgUrl: string = "https://i.imgur.com/OQENGf1.jpeg";
 
-  @ManyToMany(() => GrayCase, grayCase => grayCase.school, { owner: true })
+  @ManyToMany(() => GrayCase, (grayCase) => grayCase.school, { owner: true })
   grayed = new Collection<GrayCase>(this);
 
-  @ManyToMany(() => Student, student => student.enrolled)
+  @ManyToMany(() => Student, (student) => student.enrolled)
   members = new Collection<Student>(this);
 
-  @ManyToOne(() => Admin)
-  creator: Admin;
+  @OneToOne()
+  creator!: Admin;
 
-  constructor(schoolName : string, rcnumber: number, address: string, state: string, country: string){
+  constructor(
+    schoolName: string,
+    rcnumber: number,
+    address: string,
+    state: string,
+    country: string,
+    creator: Admin,
+  ) {
     this.schoolName = schoolName;
     this.rcnumber = rcnumber;
     this.address = address;
     this.state = state;
     this.country = country;
+    this.creator = creator;
   }
-
 }

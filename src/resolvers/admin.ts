@@ -18,18 +18,21 @@ import { validateNewPass, validateRegister } from "../utils/validateRegister";
 import { AdminResponse } from "../types";
 import { sendEmail } from "../utils/sendEmail";
 import { v4 } from "uuid";
+import { School } from "../entities/School";
 
-@Resolver(Admin) 
+@Resolver(Admin)
 export class AdminResolver {
   @FieldResolver(() => String)
-  email(@Root() admin: Admin, @Ctx() { req }: MyContext) {
-    if (req.session.userid === admin.id) {
-      return admin.email;
-    }
-    return "";
+  async school(@Root() admin: Admin, @Ctx() { em, req }: MyContext) {
+   const school = await em.fork({}).findOne(School, { creator: admin });
+   if (school){
+    return school.schoolName
+   }else{
+    return "Did not find school!!"
+   }
   }
 
-/** Change Password */
+  /** Change Password */
   @Mutation(() => AdminResponse)
   async changePassword(
     @Arg("token") token: string,
@@ -102,9 +105,11 @@ export class AdminResolver {
     @Ctx() { em, req }: MyContext
   ): Promise<AdminResponse | undefined> {
     try {
-      const admin = await em.fork({}).findOneOrFail(Admin, { adminName: adminName });
-      return{
-        admin
+      const admin = await em
+        .fork({})
+        .findOneOrFail(Admin, { adminName: adminName });
+      return {
+        admin,
       };
     } catch (err) {
       return {
@@ -133,7 +138,21 @@ export class AdminResolver {
     try {
       const admin = await em
         .fork({})
-        .findOneOrFail(Admin, { id: req.session.userid });
+        .findOneOrFail(
+          Admin,
+          { id: req.session.userid },
+          {
+            populate: [
+              "adminName",
+              "email",
+              "createdAt",
+              "phoneNumber",
+              "profileImgUrl",
+              "id",
+              "school",
+            ],
+          }
+        );
       return {
         admin,
       };
@@ -149,7 +168,6 @@ export class AdminResolver {
     }
   }
 
-
   @Mutation(() => AdminResponse)
   async registerAdmin(
     @Arg("options") options: UsernamePasswordInput,
@@ -162,43 +180,43 @@ export class AdminResolver {
 
     const hashedPassword = await argon2.hash(options.password);
     try {
-          try {
-            const admin = new Admin(
-              options.adminName,
-              options.phoneNumber,
-              options.email,
-              hashedPassword
-            );
-            await em.fork({}).persistAndFlush(admin);
+      try {
+        const admin = new Admin(
+          options.adminName,
+          options.phoneNumber,
+          options.email,
+          hashedPassword
+        );
+        await em.fork({}).persistAndFlush(admin);
 
-            // uni.students.add(user);
-            // em.fork({}).persistAndFlush(uni);
+        // uni.students.add(user);
+        // em.fork({}).persistAndFlush(uni);
 
-            // user = await em.fork({}).getRepository(User).findOneOrFail({})
-            req.session.userid = admin.id;
-            return { admin };
-          } catch (err) {
-            if (err.code === "23505") {
-              return {
-                errors: [
-                  {
-                    field: "adminName",
-                    message: "Admin Name already taken",
-                  },
-                ],
-              };
-            } else {
-              return {
-                errors: [
-                  {
-                    field: "Could not create user",
-                    message: err.message,
-                  },
-                ],
-              };
-            }
-          }
+        // user = await em.fork({}).getRepository(User).findOneOrFail({})
+        req.session.userid = admin.id;
+        return { admin };
       } catch (err) {
+        if (err.code === "23505") {
+          return {
+            errors: [
+              {
+                field: "adminName",
+                message: "Admin Name already taken",
+              },
+            ],
+          };
+        } else {
+          return {
+            errors: [
+              {
+                field: "Could not create user",
+                message: err.message,
+              },
+            ],
+          };
+        }
+      }
+    } catch (err) {
       return {
         errors: [
           {
@@ -271,10 +289,10 @@ export class AdminResolver {
   }
 
   @Query(() => [Admin])
-  async getAdmins(@Ctx() {em}: MyContext) : 
-  Promise<Admin[]>{
-    const admin= await em.fork({}).find(Admin, {}, {orderBy: {adminName: QueryOrder.DESC} });
+  async getAdmins(@Ctx() { em }: MyContext): Promise<Admin[]> {
+    const admin = await em
+      .fork({})
+      .find(Admin, {}, { orderBy: { adminName: QueryOrder.DESC } });
     return admin;
   }
-
 }

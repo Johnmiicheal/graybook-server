@@ -45,15 +45,7 @@ export class Student {
 
   @Field()
   @Property({ nullable: true })
-  birthDay: string;
-
-  @Field()
-  @Property({ nullable: true })
-  birthMonth: string;
-
-  @Field()
-  @Property({ nullable: true })
-  birthYear: string;
+  birthDate: Date = new Date();
 
   @Property({ nullable: true })
   parentName: string;
@@ -88,7 +80,10 @@ export class Student {
   enrolled = new Collection<School>(this);
 
   @ManyToMany(() => GrayCase, (grayCase) => grayCase.defaulter, { owner: true })
-  default = new Collection<GrayCase>(this);
+  defaults = new Collection<GrayCase>(this);
+
+  @ManyToOne(() => School)
+  school: School;
 
   @ManyToOne(() => Admin)
   admin: Admin;
@@ -99,9 +94,7 @@ export class Student {
     gradeClass: string,
     gender: string,
     ageInput: number,
-    birthDay: string,
-    birthMonth: string,
-    birthYear: string,
+    birthDate: Date,
     parentName: string,
     parentNumber: string,
     parentEmail: string,
@@ -109,16 +102,16 @@ export class Student {
     state: string,
     lgaOrigin: string,
     academicResult: string,
-    profileImgUrl: string
+    profileImgUrl: string,
+    admin: Admin,
+    school: School,
   ) {
     this.firstName = firstName;
     this.lastName = lastName;
     this.gradeClass = gradeClass;
     this.gender = gender;
     this.ageInput = ageInput;
-    this.birthDay = birthDay;
-    this.birthMonth = birthMonth;
-    this.birthYear = birthYear;
+    this.birthDate = birthDate;
     this.parentName = parentName;
     this.parentNumber = parentNumber;
     this.parentEmail = parentEmail;
@@ -126,6 +119,8 @@ export class Student {
     this.state = state;
     this.lgaOrigin = lgaOrigin;
     this.academicResult = academicResult;
-    this.profileImgUrl = profileImgUrl
+    this.profileImgUrl = profileImgUrl;
+    this.admin = admin;
+    this.school = school
   }
 }

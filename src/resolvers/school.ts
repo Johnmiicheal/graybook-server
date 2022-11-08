@@ -6,10 +6,10 @@ import {
   UseMiddleware,
   Mutation,
   FieldResolver,
-  Root,
+  Root
 } from "type-graphql";
 
-import { SchoolResponse, MyContext } from "../types";
+import { SchoolResponse, MyContext, AdminResponse } from "../types";
 import { School } from "../entities/School";
 import { Admin } from "../entities/Admin";
 import { QueryOrder } from "@mikro-orm/core";
@@ -22,14 +22,42 @@ import { GrayCase } from "../entities/GrayCase";
 
 @Resolver(School)
 export class SchoolResolver {
-  @FieldResolver(() => String)
-  creator(@Root() admin: Admin, @Ctx() { req }: MyContext) {
-    if (req.session.userid === admin.id) {
-      return admin.adminName;
-    }
-    return "";
-  }
 
+  @FieldResolver(() => AdminResponse, {nullable: true})
+  async creator(@Root() school: School, @Ctx() { em, req }: MyContext)
+  : Promise<AdminResponse> {
+    try{
+      const admin = await em.fork({}).findOne(Admin, {id: school.creator.id}, 
+        {populate: ["adminName", "email", "createdAt", "phoneNumber", "profileImgUrl", "id", "school" ]});
+  
+        if (admin){
+          return {
+            admin,
+          }
+        } else{
+          return {
+            errors: [
+              {
+                field: "Error occured while fetching admin.",
+                message: `Admin could not be fetched`,
+              },
+            ],
+          };
+  
+        }
+      } catch (err){
+        return {
+            errors: [
+              {
+                field: "Error occured while fetching admin.",
+                message: err,
+              },
+            ],
+        };
+  
+      }
+  }
+  
   @Query(() => [School])
   async getSchools(@Ctx() { em }: MyContext): Promise<School[]> {
     const schools = await em
@@ -120,11 +148,10 @@ export class SchoolResolver {
             rcnumber,
             address,
             state,
-            country
+            country,
+            admin
           );
-          admin.school.add(school);
           await em.fork({}).persistAndFlush(school);
-          await em.fork({}).persistAndFlush(admin);
           return { school };
         } else {
           return {
@@ -167,20 +194,6 @@ export class SchoolResolver {
         ],
       };
     }
-  }
-
-  @Query(() => [School])
-  @UseMiddleware(isAuth)
-  async getAdminSchool(@Ctx() { em, req }: MyContext): Promise<School[]> {
-    const admin = await em
-      .fork({})
-      .findOne(Admin, { id: req.session.userid }, { populate: ["school", "school.creator"] });
-
-    if (admin) {
-      const schools = admin.school.getItems();
-      return schools;
-    }
-    return [];
   }
 
   @Query(() => [Student])
@@ -229,7 +242,7 @@ export class SchoolResolver {
 
     if (admin && school) {
       //check if creator
-      if (school.creator.id === req.session.userid) {
+      if (req.session.userid === admin.id) {
         //alter details
         school.schoolName = schoolName ? schoolName : school.schoolName;
         school.rcnumber = rcnumber ? rcnumber : school.rcnumber;
@@ -238,7 +251,6 @@ export class SchoolResolver {
         school.country = country ? country : school.country;
         school.logoImgUrl = logoImgUrl ? logoImgUrl : school.logoImgUrl;
         school.bannerImgUrl = bannerImgUrl ? bannerImgUrl : school.bannerImgUrl;
-
         return true;
       } else {
         return false;
