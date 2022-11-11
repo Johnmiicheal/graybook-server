@@ -57,6 +57,30 @@ export class StudentResolver {
     }
   }
 
+  @FieldResolver(() => String)
+  async parentName(@Root() student: Student, @Ctx() { em, req }: MyContext) {
+   return student.parentName
+  }
+
+  @FieldResolver(() => String)
+  async parentEmail(@Root() student: Student, @Ctx() { em, req }: MyContext) {
+   return student.parentEmail
+  }
+
+  @FieldResolver(() => String)
+  async parentNumber(@Root() student: Student, @Ctx() { em, req }: MyContext) {
+   return student.parentNumber
+  }
+
+  @FieldResolver(() => String)
+  async homeAddress(@Root() student: Student, @Ctx() { em, req }: MyContext) {
+   return student.homeAddress
+  }
+  @FieldResolver(() => String)
+  async state(@Root() student: Student, @Ctx() { em, req }: MyContext) {
+   return student.state
+  }
+
   @Query(() => [Student])
   async getStudent(@Ctx() { em }: MyContext): Promise<Student[]> {
     const students = await em
@@ -143,12 +167,12 @@ export class StudentResolver {
 
   @Query(() => [Student])
   async getStudentFromSchool(
-    @Arg("schoolId") schoolId: number,
+    @Arg("schoolId") schoolId: string,
     @Ctx() { em, req }: MyContext
   ): Promise<Student[]> {
     const school = await em
       .fork({})
-      .findOne(School, { id: schoolId }, { populate: ["members"] });
+      .findOne(School, { schoolName: schoolId }, { populate: ["members"] });
     if (school) {
       const students = school.members.getItems();
       return students;
@@ -156,15 +180,43 @@ export class StudentResolver {
     return [];
   }
 
-  @Query(() => StudentResponse)
-  // @UseMiddleware(isAuth)
-  async getStudentByClass(
+  @Query(() => [Student])
+  @UseMiddleware(isAuth)
+  async getStudentFromClass(
     @Arg("gradeClass") gradeClass: string,
     @Ctx() { em, req }: MyContext
+  ): Promise<Student[]> {
+    const admin = await em.fork({}).findOne(Admin, { id: req.session.userid})
+    const student = await em
+      .fork({})
+      .find(Student, { gradeClass: gradeClass, admin: admin });
+    if (student) {
+      return student;
+    }
+    return [];
+  }
+
+  @Query(() => Number)
+  async getClassCount(
+    @Arg("gradeClass") gradeClass: string,
+    @Ctx() { em, req } : MyContext
+  ): Promise<Number> {
+    // const admin = await em.fork({}).findOne(Admin, { id: req.session.userid })
+    const student = await em.fork({}).find(Student, { gradeClass: gradeClass })
+    if(student){
+      return student.length
+    }
+    return 0
+  }
+
+
+  @Query(() => StudentResponse)
+  // @UseMiddleware(isAuth)
+  async getStudentById(
+    @Arg("id") id: number,
+    @Ctx() { em, req }: MyContext
   ): Promise<StudentResponse> {
-    // const admin = await em.fork({}).findOneOrFail(Admin, {id: req.session.userid }, {populate: ["school", "student"]});
-    // const school = await em.fork({}).findOneOrFail(School, { creator: admin }, { populate: ["members"]});
-    const student = await em.fork({}).findOne(Student, { gradeClass: gradeClass });
+    const student = await em.fork({}).findOne(Student, { id: id });
     if (student) {
       return{ student }
     } else {
@@ -184,8 +236,8 @@ export class StudentResolver {
   async registerStudent(
     @Arg("firstName") firstName: string,
     @Arg("lastName") lastName: string,
-    @Arg("gender") gender: string,
     @Arg("gradeClass") gradeClass: string,
+    @Arg("gender") gender: string,
     @Arg("ageInput") ageInput: number,
     @Arg("birthDate") birthDate: Date,
     @Arg("parentName") parentName: string,
@@ -209,8 +261,8 @@ export class StudentResolver {
       const student = new Student(
         firstName,
         lastName,
-        gender,
         gradeClass,
+        gender,
         ageInput,
         birthDate,
         parentName,
@@ -244,12 +296,19 @@ export class StudentResolver {
   async updateStudentDetails(
     @Arg("studentId") studentId: number,
     @Arg("firstName") firstName: string,
-    @Arg("rcnumber") rcnumber: number,
-    @Arg("address") address: string,
+    @Arg("lastName") lastName: string,
+    @Arg("gradeClass") gradeClass: string,
+    @Arg("gender") gender: string,
+    @Arg("ageInput") ageInput: number,
+    @Arg("birthDate") birthDate: Date,
+    @Arg("parentName") parentName: string,
+    @Arg("parentNumber") parentNumber: string,
+    @Arg("parentEmail") parentEmail: string,
+    @Arg("homeAddress") homeAddress: string,
     @Arg("state") state: string,
-    @Arg("country") country: string,
-    @Arg("logoImgUrl", { nullable: true }) logoImgUrl: string,
-    @Arg("bannerImgUrl", { nullable: true }) bannerImgUrl: string,
+    @Arg("lgaOrigin") lgaOrigin: string,
+    @Arg("academicResult") academicResult: string,
+    @Arg("profileImgUrl") profileImgUrl: string,
     @Ctx() { em, req }: MyContext
   ): Promise<boolean> {
     const admin = await em.fork({}).findOne(Admin, { id: req.session.userid });
