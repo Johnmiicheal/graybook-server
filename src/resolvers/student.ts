@@ -9,10 +9,11 @@ import {
   Root,
 } from "type-graphql";
 
-import { AdminResponse, MyContext, SchoolResponse, StudentResponse } from "../types";
+import { AdminResponse, GrayCaseResponse, MyContext, SchoolResponse, StudentResponse } from "../types";
 import { School } from "../entities/School";
 import { Student } from "../entities/Student";
 import { Admin } from "../entities/Admin";
+import { GrayCase } from "../entities/GrayCase";
 import { QueryOrder } from "@mikro-orm/core";
 import { isAuth } from "../middleware/isAuth";
 // import session from "express-session";
@@ -57,9 +58,53 @@ export class StudentResolver {
     }
   }
 
+  @FieldResolver(() => GrayCaseResponse)
+  async studentCase(
+    @Root() student: Student,
+    @Ctx() { em, req }: MyContext
+  ): Promise<GrayCaseResponse>{
+    const grayCase = await em.fork({}).findOne(GrayCase, { defaulter: student }, { populate: [
+      "defaulter",
+      "category",
+      "owner"
+    ]});
+    if (grayCase) {
+      return { grayCase };
+    } else {
+      return { 
+        errors: [
+          {
+            field: "Case not found.",
+            message: "Case could not be fetched"
+          }
+        ]
+      }
+    }
+  }
+
+  @Query(() => Number)
+  async getCaseCount(
+    @Arg("id") id: number,
+    @Ctx() { em }: MyContext
+  ): Promise<Number>{
+    const student = await em.fork({}).findOne(Student, { id: id }, { populate:[
+      "defaults"
+    ]});
+    if( student ){
+      return student.defaults.count();
+    }else {
+      return 0
+    }
+  }
+
   @FieldResolver(() => String)
   async parentName(@Root() student: Student, @Ctx() { em, req }: MyContext) {
    return student.parentName
+  }
+
+  @FieldResolver(() => String)
+  async profileImgUrl(@Root() student: Student, @Ctx() { em, req }: MyContext) {
+   return student.profileImgUrl
   }
 
   @FieldResolver(() => String)

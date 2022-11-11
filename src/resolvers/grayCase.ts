@@ -82,7 +82,6 @@ export class GrayCaseResolver {
     }
   }
 
-
   @Query(() => PaginatedGrayCase)
   @UseMiddleware(isAuth)
   async schoolCases(
@@ -448,89 +447,12 @@ export class GrayCaseResolver {
     return false;
   }
 
-  // @Mutation(() => VoteResponse)
-  // @UseMiddleware(isAuth)
-  // async votePost(
-  //   @Arg("id", () => Int) id: number,
-  //   @Arg("value") value: number,
-  //   @Ctx() { em, req }: MyContext
-  // ): Promise<VoteResponse> {
-  //   //resolve value to -1,0,1
-  //   value === 0 ? (value = 0) : value >= 1 ? (value = 1) : (value = -1);
-
-  //   const user = await em.fork({}).findOne(User, { id: req.session.userid });
-  //   const post = await em
-  //     .fork({})
-  //     .findOne(Post, { id }, { populate: ["voteCount"] });
-  
-  //   if (user && post) {
-  //     const postVote = await em.fork({}).findOne(PostVote, { postId: post.id, userId: user.id }); //check if vote exists
-  //     if (postVote) {
-  //       post.voteCount -= postVote.value;
-  //       postVote.value = value;
-  //       post.voteCount += postVote.value;
-  //       await em.fork({}).persistAndFlush(postVote);
-  //     } else {
-  //       const newPostVote = new PostVote(user, post, value);
-  //       post.voteCount += newPostVote.value;
-
-  //       // post.votes.add(newPostVote);
-  //       await em.fork({}).persistAndFlush(newPostVote);
-  //     }
-  //     await em.fork({}).persistAndFlush(post);
-  //     return {
-  //       success: true,
-  //       voteCount: post.voteCount
-  //     };
-  //   } else {
-  //     return {
-  //       success: false
-  //     };
-  //   }
-  // }
-
-  // @Mutation(() => VoteResponse)
-  // @UseMiddleware(isAuth)
-  // async unvotePost(
-  //   @Arg("id", () => Int) id: number,
-  //   @Ctx() { em, req }: MyContext
-  // ): Promise<VoteResponse> {
-
-  //   const user = await em.fork({}).findOne(User, { id: req.session.userid });
-  //   const post = await em
-  //     .fork({})
-  //     .findOne(Post, { id }, { populate: ["voteCount"] });
-  
-  //   if (user && post) {
-  //     const postVote = await em.fork({}).findOne(PostVote, { postId: post.id, userId: user.id }); //check if vote exists
-  //     if (postVote) {
-  //       post.voteCount -= postVote.value;
-
-  //       await em.fork({}).nativeDelete(PostVote, {postId: id, userId: user.id})
-  //       await em.fork({}).persistAndFlush(post);
-  //     } else {
-  //       return {
-  //         success: true, // Nothing executed, nothing failed
-  //       }
-  //     }
-  //     return {
-  //       success: true, //actually executed something
-  //       voteCount: post.voteCount
-  //     };
-  //   } else {
-  //     return {
-  //       success: false
-  //     };
-  //   }
-  // }
-
-
   @Mutation(() => Boolean)
   @UseMiddleware(isAuth)
   async archiveGrayCase(
     @Arg("id", () => Int) id: number,
     @Ctx() { em, req }: MyContext
-  ): Promise<boolean> {
+  ): Promise<Boolean> {
     const user = await em.fork({}).findOne(Admin, { id: req.session.userid });
     const post = await em
       .fork({})
@@ -544,4 +466,21 @@ export class GrayCaseResolver {
       return false;
     }
   }
+  
+  @Query(() => Number)
+  async getStudentCaseCount(
+    @Arg("id") id: number,
+    @Ctx() { em, req }: MyContext
+  ): Promise<Number> {
+    const student = await em.fork({}).findOne(Student, { id: id })
+    const grayed = await em.fork({}).findOne(GrayCase, {defaulter: student })
+    if( student && grayed ){
+      return student.defaults.count()
+    }
+    else{
+      return 0
+    }
+  }
+
 }
+
