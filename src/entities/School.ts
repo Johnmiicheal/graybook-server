@@ -47,7 +47,7 @@ export class School {
   description: string = "Description goes here";
 
   @Field()
-  @Property()
+  @Property({ length: 10485756 })
   logoImgUrl: string = "https://i.imgur.com/OQENGf1.jpeg";
 
   @Field()
@@ -69,6 +69,7 @@ export class School {
     address: string,
     state: string,
     country: string,
+    logoImgUrl: string,
     creator: Admin,
   ) {
     this.schoolName = schoolName;
@@ -76,6 +77,7 @@ export class School {
     this.address = address;
     this.state = state;
     this.country = country;
+    this.logoImgUrl = logoImgUrl;
     this.creator = creator;
   }
 }

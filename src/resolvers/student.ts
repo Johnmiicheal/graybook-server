@@ -16,8 +16,7 @@ import { Admin } from "../entities/Admin";
 import { GrayCase } from "../entities/GrayCase";
 import { QueryOrder } from "@mikro-orm/core";
 import { isAuth } from "../middleware/isAuth";
-// import session from "express-session";
-
+import { format } from "date-fns";
 @Resolver(Student)
 export class StudentResolver {
   @FieldResolver(() => SchoolResponse)
@@ -37,6 +36,8 @@ export class StudentResolver {
       }
     }
   }
+
+
   
   @FieldResolver(() => AdminResponse)
   async creator(
@@ -98,6 +99,15 @@ export class StudentResolver {
   }
 
   @FieldResolver(() => String)
+  async grayId(
+    @Root() student: Student,
+    @Ctx() { em }: MyContext
+  ): Promise<String>{
+    const gray = `GB${format(new Date(student.createdAt), 'yy')}${student.id.toString().padStart(3, '0')}`
+    return gray
+  }
+
+  @FieldResolver(() => String)
   async parentName(@Root() student: Student, @Ctx() { em, req }: MyContext) {
    return student.parentName
   }
@@ -124,6 +134,11 @@ export class StudentResolver {
   @FieldResolver(() => String)
   async state(@Root() student: Student, @Ctx() { em, req }: MyContext) {
    return student.state
+  }
+
+  @FieldResolver(() => String)
+  async academicResult(@Root() student: Student, @Ctx() { em, req }: MyContext) {
+   return student.academicResult
   }
 
   @Query(() => [Student])
@@ -246,8 +261,8 @@ export class StudentResolver {
     @Arg("gradeClass") gradeClass: string,
     @Ctx() { em, req } : MyContext
   ): Promise<Number> {
-    // const admin = await em.fork({}).findOne(Admin, { id: req.session.userid })
-    const student = await em.fork({}).find(Student, { gradeClass: gradeClass })
+    const admin = await em.fork({}).findOne(Admin, { id: req.session.userid })
+    const student = await em.fork({}).find(Student, { gradeClass: gradeClass, admin: admin })
     if(student){
       return student.length
     }
@@ -301,7 +316,7 @@ export class StudentResolver {
       .findOne(
         Admin,
         { id: req.session.userid });
-    const school = await em.fork({}).findOne(School, { creator: admin });
+    const school = await em.fork({}).findOne(School, { creator: admin }); 
     if (admin && school) {
       const student = new Student(
         firstName,

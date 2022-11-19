@@ -131,6 +131,7 @@ export class SchoolResolver {
     @Arg("address") address: string,
     @Arg("state") state: string,
     @Arg("country") country: string,
+    @Arg("logoImgUrl") logoImgUrl: string,
     //we can make it optional to create with logo and banner images
     @Ctx() { em, req }: MyContext
   ): Promise<SchoolResponse> {
@@ -149,6 +150,7 @@ export class SchoolResolver {
             address,
             state,
             country,
+            logoImgUrl,
             admin
           );
           await em.fork({}).persistAndFlush(school);

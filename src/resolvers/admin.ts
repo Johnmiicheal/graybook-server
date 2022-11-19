@@ -32,6 +32,16 @@ export class AdminResolver {
    }
   }
 
+  @FieldResolver(() => String)
+  async schoolImg(@Root() admin: Admin, @Ctx() { em, req }: MyContext) {
+   const school = await em.fork({}).findOne(School, { creator: admin });
+   if (school){
+    return school.logoImgUrl
+   }else{
+    return ""
+   }
+  }
+
   /** Change Password */
   @Mutation(() => AdminResponse)
   async changePassword(

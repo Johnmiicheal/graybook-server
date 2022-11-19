@@ -18,10 +18,13 @@ export class Student {
   @Field()
   @PrimaryKey()
   id!: number;
-
+  
   @Field(() => String)
   @Property()
   createdAt = new Date();
+
+  @Property({ unique: true, nullable: true })
+  grayId: string
 
   @Field()
   @Property()
@@ -65,7 +68,7 @@ export class Student {
   @Property({ nullable: true })
   lgaOrigin: string;
 
-  @Property({ nullable: true })
+  @Property({ nullable: true, length: 10485756 })
   academicResult: string;
 
   @Field(() => Boolean)
@@ -73,7 +76,7 @@ export class Student {
   isArchived = false;
 
   @Field(() => String)
-  @Property()
+  @Property({ length: 10485756})
   profileImgUrl = "https://i.imgur.com/OQENGf1.jpeg";
 
   @ManyToMany(() => School, (school) => school.members, { owner: true })

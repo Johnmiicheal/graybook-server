@@ -45,7 +45,7 @@ export class GrayCase {
 
   @Field()
   @Property()
-  isActive: boolean = false;
+  isActive: boolean = true;
 
   @Field()
   @Property()

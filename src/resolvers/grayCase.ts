@@ -130,6 +130,9 @@ export class GrayCaseResolver {
     }
   }
 
+
+
+
   // @Query(() => PaginatedGrayCase)
   // @UseMiddleware(isAuth)
   // async homePosts(
@@ -479,6 +482,65 @@ export class GrayCaseResolver {
     }
     else{
       return 0
+    }
+  }
+
+  @Query(() => [GrayCase])
+  async getStudentCases(
+    @Arg("studentId") studentId: number,
+    @Ctx() { em, req }: MyContext
+  ): Promise<GrayCase[]> {
+    const student = await em.fork({}).findOne(Student, { id: studentId }, { populate: [
+      "defaults"
+    ]})
+    const grayCase = await em.fork({}).findOne(GrayCase, { defaulter : student })
+    if(student && grayCase){
+      return student.defaults.getItems()
+    }
+    else{
+      return []
+    }
+  }
+
+  @Query(() => PaginatedGrayCase)
+  // @UseMiddleware(isAuth)
+  async studentCases(
+    @Arg("studentId") studentId: number,
+    @Arg("limit") limit: number,
+    @Arg("cursor", { defaultValue: 0 }) cursor: number,
+    @Arg("sortBy", () => String, { nullable: true }) sortBy: string | null,
+    @Ctx() { em, req }: MyContext
+  ): Promise<PaginatedGrayCase> {
+    cursor = cursor === null ? 0 : cursor;
+    sortBy = sortBy === null ? "recent" : sortBy;
+    const student =  await em.fork({}).findOne(Student, { id: studentId });
+      
+    if (student) {
+      const maxLimit: number = 50;
+      limit = Math.min(maxLimit, limit);
+
+      const endIndex = cursor + limit;
+      const posts = student.defaults.getItems()
+      if(endIndex > posts.length){
+        return {
+          grayCase : posts.slice(cursor),
+          hasMore: false,
+          cursor: posts.length-1
+        }
+      }else{
+        return{
+          grayCase: posts.slice(cursor, cursor+limit),
+          hasMore: false,
+          cursor: cursor+limit
+        }
+      }
+
+    } else {
+      return {
+        grayCase: [],
+        hasMore: false,
+        cursor: -1,
+      };
     }
   }
 

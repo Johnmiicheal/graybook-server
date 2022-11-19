@@ -1,7 +1,7 @@
 import express from "express";
 import session from "express-session";
 import cors from "cors";
-
+import bodyParser from "body-parser";
 import connectRedis from "connect-redis";
 import Redis from "ioredis";
 
@@ -52,6 +52,10 @@ const main = async() => {
     const redisStore = new RedisStore({
         client: redis,
     });
+    app.use(bodyParser.json({limit: '50mb'}));
+    app.use(bodyParser.urlencoded({limit: '50mb', extended: true, parameterLimit:50000}));
+    app.use(express.json());
+
 
     app.use(
         session({
