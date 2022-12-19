@@ -44,7 +44,7 @@ export class Admin {
   isDisabled = false;
 
   @Field(() => String)
-  @Property()
+  @Property({ length: 10485756 })
   profileImgUrl = "https://i.imgur.com/OQENGf1.jpeg";
 
   @OneToMany(() => GrayCase, (grayCase) => grayCase.owner)

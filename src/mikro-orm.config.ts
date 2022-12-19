@@ -4,6 +4,7 @@ import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
 require("dotenv").config();
 
+// Entities.ts
 import { School } from "./entities/School";
 import { Student } from "./entities/Student";
 import { GrayCase } from "./entities/GrayCase";
@@ -22,6 +23,10 @@ export default {
         GrayCase,
         Admin
     ],
+    discovery: {
+        tsConfigPath: "../tsconfig.json",
+        warnWhenNoEntities: true,
+    },
     dbName:process.env.PG_DATABASE,
     type:'postgresql',
     debug: !__prod__,
@@ -31,5 +36,3 @@ export default {
     port: process.env.PG_PORT,
     metadataProvider: TsMorphMetadataProvider,
 } as Parameters<typeof MikroORM.init>[0];
-
-
