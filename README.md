@@ -1,5 +1,5 @@
 <p align='center'>
-    <img src"https://i.imgur.com/hYNRz8q.png" alt="server banner" />
+    <img src="https://i.imgur.com/hYNRz8q.png" alt="server banner" />
 </p>
 
 ## GrayBook Server Repository
