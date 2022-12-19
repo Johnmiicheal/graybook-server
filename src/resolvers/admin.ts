@@ -23,7 +23,7 @@ import { School } from "../entities/School";
 @Resolver(Admin)
 export class AdminResolver {
   @FieldResolver(() => String)
-  async school(@Root() admin: Admin, @Ctx() { em, req }: MyContext) {
+  async school(@Root() admin: Admin, @Ctx() { em }: MyContext) {
    const school = await em.fork({}).findOne(School, { creator: admin });
    if (school){
     return school.schoolName
@@ -33,7 +33,7 @@ export class AdminResolver {
   }
 
   @FieldResolver(() => String)
-  async schoolImg(@Root() admin: Admin, @Ctx() { em, req }: MyContext) {
+  async schoolImg(@Root() admin: Admin, @Ctx() { em }: MyContext) {
    const school = await em.fork({}).findOne(School, { creator: admin });
    if (school){
     return school.logoImgUrl
@@ -112,7 +112,7 @@ export class AdminResolver {
   @Query(() => AdminResponse, { nullable: true })
   async admin(
     @Arg("adminName") adminName: string,
-    @Ctx() { em, req }: MyContext
+    @Ctx() { em }: MyContext
   ): Promise<AdminResponse | undefined> {
     try {
       const admin = await em

@@ -254,7 +254,7 @@ export class GrayCaseResolver {
     @Arg("limit", () => Int) limit: number,
     @Arg("cursor", () => Int) cursor: number | null,
     @Arg("sortBy", () => String, { nullable: true }) sortBy: string | null,
-    @Ctx() { em, req }: MyContext
+    @Ctx() { em }: MyContext
   ): Promise<PaginatedGrayCase> {
     cursor = cursor === null ? 0 : cursor;
     sortBy = sortBy === null ? "recent" : sortBy;
@@ -473,7 +473,7 @@ export class GrayCaseResolver {
   @Query(() => Number)
   async getStudentCaseCount(
     @Arg("id") id: number,
-    @Ctx() { em, req }: MyContext
+    @Ctx() { em }: MyContext
   ): Promise<Number> {
     const student = await em.fork({}).findOne(Student, { id: id })
     const grayed = await em.fork({}).findOne(GrayCase, {defaulter: student })
@@ -488,7 +488,7 @@ export class GrayCaseResolver {
   @Query(() => [GrayCase])
   async getStudentCases(
     @Arg("studentId") studentId: number,
-    @Ctx() { em, req }: MyContext
+    @Ctx() { em }: MyContext
   ): Promise<GrayCase[]> {
     const student = await em.fork({}).findOne(Student, { id: studentId }, { populate: [
       "defaults"
@@ -509,7 +509,7 @@ export class GrayCaseResolver {
     @Arg("limit") limit: number,
     @Arg("cursor", { defaultValue: 0 }) cursor: number,
     @Arg("sortBy", () => String, { nullable: true }) sortBy: string | null,
-    @Ctx() { em, req }: MyContext
+    @Ctx() { em }: MyContext
   ): Promise<PaginatedGrayCase> {
     cursor = cursor === null ? 0 : cursor;
     sortBy = sortBy === null ? "recent" : sortBy;

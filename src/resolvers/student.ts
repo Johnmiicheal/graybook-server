@@ -20,7 +20,7 @@ import { format } from "date-fns";
 @Resolver(Student)
 export class StudentResolver {
   @FieldResolver(() => SchoolResponse)
-  async school(@Root() student: Student, @Ctx() { em, req }: MyContext
+  async school(@Root() student: Student, @Ctx() { em }: MyContext
   ): Promise<SchoolResponse>{
     const school = await em.fork({}).findOne(School, { id: student.school.id });
     if (school) {
@@ -42,7 +42,7 @@ export class StudentResolver {
   @FieldResolver(() => AdminResponse)
   async creator(
     @Root() student: Student,
-    @Ctx() { em, req }: MyContext
+    @Ctx() { em }: MyContext
   ): Promise<AdminResponse> {
     const admin = await em.fork({}).findOne(Admin, { id: student.admin.id });
     if (admin) {
@@ -62,7 +62,7 @@ export class StudentResolver {
   @FieldResolver(() => GrayCaseResponse)
   async studentCase(
     @Root() student: Student,
-    @Ctx() { em, req }: MyContext
+    @Ctx() { em }: MyContext
   ): Promise<GrayCaseResponse>{
     const grayCase = await em.fork({}).findOne(GrayCase, { defaulter: student }, { populate: [
       "defaulter",
@@ -101,43 +101,42 @@ export class StudentResolver {
   @FieldResolver(() => String)
   async grayId(
     @Root() student: Student,
-    @Ctx() { em }: MyContext
   ): Promise<String>{
     const gray = `GB${format(new Date(student.createdAt), 'yy')}${student.id.toString().padStart(3, '0')}`
     return gray
   }
 
   @FieldResolver(() => String)
-  async parentName(@Root() student: Student, @Ctx() { em, req }: MyContext) {
+  async parentName(@Root() student: Student) {
    return student.parentName
   }
 
   @FieldResolver(() => String)
-  async profileImgUrl(@Root() student: Student, @Ctx() { em, req }: MyContext) {
+  async profileImgUrl(@Root() student: Student) {
    return student.profileImgUrl
   }
 
   @FieldResolver(() => String)
-  async parentEmail(@Root() student: Student, @Ctx() { em, req }: MyContext) {
+  async parentEmail(@Root() student: Student) {
    return student.parentEmail
   }
 
   @FieldResolver(() => String)
-  async parentNumber(@Root() student: Student, @Ctx() { em, req }: MyContext) {
+  async parentNumber(@Root() student: Student) {
    return student.parentNumber
   }
 
   @FieldResolver(() => String)
-  async homeAddress(@Root() student: Student, @Ctx() { em, req }: MyContext) {
+  async homeAddress(@Root() student: Student) {
    return student.homeAddress
   }
   @FieldResolver(() => String)
-  async state(@Root() student: Student, @Ctx() { em, req }: MyContext) {
+  async state(@Root() student: Student) {
    return student.state
   }
 
   @FieldResolver(() => String)
-  async academicResult(@Root() student: Student, @Ctx() { em, req }: MyContext) {
+  async academicResult(@Root() student: Student) {
    return student.academicResult
   }
 
@@ -152,7 +151,7 @@ export class StudentResolver {
   @Query(() => StudentResponse)
   async getStudentByName(
     @Arg("firstName") firstName: string,
-    @Ctx() { em, req }: MyContext
+    @Ctx() { em }: MyContext
   ): Promise<StudentResponse> {
     try {
       const student = await em
@@ -228,7 +227,7 @@ export class StudentResolver {
   @Query(() => [Student])
   async getStudentFromSchool(
     @Arg("schoolId") schoolId: string,
-    @Ctx() { em, req }: MyContext
+    @Ctx() { em }: MyContext
   ): Promise<Student[]> {
     const school = await em
       .fork({})
@@ -274,7 +273,7 @@ export class StudentResolver {
   // @UseMiddleware(isAuth)
   async getStudentById(
     @Arg("id") id: number,
-    @Ctx() { em, req }: MyContext
+    @Ctx() { em }: MyContext
   ): Promise<StudentResponse> {
     const student = await em.fork({}).findOne(Student, { id: id });
     if (student) {
@@ -379,6 +378,19 @@ export class StudentResolver {
       if (student.admin.id === req.session.userid) {
         //alter details
         student.firstName = firstName ? firstName : student.firstName;
+        student.lastName = lastName ? lastName : student.lastName;
+        student.gradeClass = gradeClass ? gradeClass : student.gradeClass;
+        student.gender = gender ? gender : student.gender;
+        student.ageInput = ageInput ? ageInput : student.ageInput;
+        student.birthDate = birthDate ? birthDate : student.birthDate;
+        student.parentName = parentName ? parentName : student.parentName;
+        student.parentNumber = parentNumber ? parentNumber : student.parentNumber;
+        student.parentEmail = parentEmail ? parentEmail : student.parentEmail;
+        student.homeAddress = homeAddress ? homeAddress : student.homeAddress;
+        student.state = state ? state : student.state;
+        student.lgaOrigin = lgaOrigin ? lgaOrigin : student.lgaOrigin;
+        student.academicResult = academicResult ? academicResult : student.academicResult;
+        student.profileImgUrl = profileImgUrl ? profileImgUrl : student.profileImgUrl;
         return true;
       } else {
         return false;

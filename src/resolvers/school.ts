@@ -24,7 +24,7 @@ import { GrayCase } from "../entities/GrayCase";
 export class SchoolResolver {
 
   @FieldResolver(() => AdminResponse, {nullable: true})
-  async creator(@Root() school: School, @Ctx() { em, req }: MyContext)
+  async creator(@Root() school: School, @Ctx() { em }: MyContext)
   : Promise<AdminResponse> {
     try{
       const admin = await em.fork({}).findOne(Admin, {id: school.creator.id}, 
@@ -70,7 +70,7 @@ export class SchoolResolver {
   async getSchoolByName(
     @Arg("schoolName") schoolName: string,
     // @Arg("universityName") universityName: string,
-    @Ctx() { em, req }: MyContext
+    @Ctx() { em }: MyContext
   ): Promise<SchoolResponse> {
     try {
       const school = await em
