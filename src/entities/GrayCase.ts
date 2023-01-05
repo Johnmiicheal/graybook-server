@@ -49,10 +49,6 @@ export class GrayCase {
 
   @Field()
   @Property()
-  voteCount: number = 0;
-
-  @Field()
-  @Property()
   wasEdited: boolean = false;
 
   @ManyToOne(() => Admin)
