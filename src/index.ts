@@ -39,7 +39,7 @@ const main = async() => {
     app.set("trust proxy", 1);
     app.use( cors({
       credentials: true,
-      origin: [ 'http://localhost:3000', 'https://studio.apollographql.com' ]
+      origin: [ String(process.env.CORS_ORIGIN), 'https://studio.apollographql.com' ]
     }));
 
     const redis = new Redis({
@@ -70,6 +70,7 @@ const main = async() => {
                 httpOnly: true,
                 secure: false,
                 maxAge: 1000 * 60 * 60 * 1024,
+                domain: __prod__ ? ".graybook.app" : undefined,
             },
         } as any)
     );
